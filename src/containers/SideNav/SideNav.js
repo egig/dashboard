@@ -91,6 +91,24 @@ function SideNav({ expanded, intl, showKubernetesResources }) {
   const isReadOnly = useIsReadOnly();
   const isTriggersInstalled = useIsTriggersInstalled();
 
+  function getNNMenuItemProps(repo) {
+    return {
+      element: NavLink,
+      isActive: false,
+      to: getPath(
+        `${urls.pipelineRuns.all()}?labelSelector=repo-name%3D${repo}`
+      )
+    };
+  }
+
+  function NNMenuItem(props) {
+    return (
+      <SideNavMenuItem {...getNNMenuItemProps(props.children)}>
+        urbanindo/{props.children}
+      </SideNavMenuItem>
+    );
+  }
+
   return (
     <CarbonSideNav
       aria-label="Main navigation"
@@ -101,6 +119,19 @@ function SideNav({ expanded, intl, showKubernetesResources }) {
       <SideNavItems>
         <SideNavMenu
           defaultExpanded
+          renderIcon={TektonIcon}
+          title="Repositories"
+        >
+          <NNMenuItem>core-services</NNMenuItem>
+          <NNMenuItem>core-web</NNMenuItem>
+          <NNMenuItem>kpr-rumah-123-com</NNMenuItem>
+          <NNMenuItem>nn-tooling</NNMenuItem>
+        </SideNavMenu>
+      </SideNavItems>
+
+      <SideNavItems>
+        <SideNavMenu
+          defaultExpanded={false}
           renderIcon={TektonIcon}
           title={intl.formatMessage({
             id: 'dashboard.sideNav.tektonResources',

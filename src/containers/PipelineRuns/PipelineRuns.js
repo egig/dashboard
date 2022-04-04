@@ -36,6 +36,7 @@ import {
   useTitleSync
 } from '@tektoncd/dashboard-utils';
 import { Add16 as Add, TrashCan32 as Delete } from '@carbon/icons-react';
+import { Pagination } from 'carbon-components-react';
 
 import { ListPageLayout } from '..';
 import { sortRunsByStartTime } from '../../utils';
@@ -70,9 +71,23 @@ export function PipelineRuns({ intl }) {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [toBeDeleted, setToBeDeleted] = useState([]);
 
+  const [pageSize, setPageSize] = useState(25);
+  const [page, setPage] = useState(1);
+
   const isReadOnly = useIsReadOnly();
 
   useTitleSync({ page: 'PipelineRuns' });
+
+  useEffect(() => {
+    const savedPageSize = localStorage.getItem('tkn-page-size');
+    if (savedPageSize) {
+      setPageSize(parseInt(savedPageSize, 10));
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('tkn-page-size', pageSize);
+  }, [pageSize]);
 
   useEffect(() => {
     setDeleteError(null);
@@ -321,12 +336,14 @@ export function PipelineRuns({ intl }) {
         batchActionButtons={batchActionButtons}
         filters={filtersUI}
         loading={isLoading}
-        pipelineRuns={pipelineRuns.filter(run => {
-          return runMatchesStatusFilter({
-            run,
-            statusFilter
-          });
-        })}
+        pipelineRuns={pipelineRuns
+          .filter(run => {
+            return runMatchesStatusFilter({
+              run,
+              statusFilter
+            });
+          })
+          .slice((page - 1) * pageSize, (page - 1) * pageSize + pageSize)}
         pipelineRunActions={pipelineRunActions()}
         selectedNamespace={namespace}
         toolbarButtons={toolbarButtons}
@@ -340,6 +357,21 @@ export function PipelineRuns({ intl }) {
           showNamespace={namespace === ALL_NAMESPACES}
         />
       ) : null}
+      {pipelineRuns.length > 10 && (
+        <Pagination
+          page={page}
+          totalItems={pipelineRuns.length}
+          backwardText="Previous page"
+          forwardText="Next page"
+          pageSize={pageSize}
+          pageSizes={[10, 25, 50, 100]}
+          itemsPerPageText="Items per page:"
+          onChange={({ page: newPage, pageSize: newPageSize }) => {
+            setPage(newPage);
+            setPageSize(newPageSize);
+          }}
+        />
+      )}
     </ListPageLayout>
   );
 }
